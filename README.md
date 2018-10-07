@@ -1,0 +1,4 @@
+#Team 2410 Analytics
+Team 2410 Analytics is a project that I started as a Junior in High School while on [FIRST Robotics Competition](https://www.firstinspires.org/robotics/frc) (FRC) Team [2410](http://mmr2410.com/). This project was used for scouting other teams at FIRST FRC competitions for alliance selection. With some help, the project was done completely in Excel. Most of the factors that I came up with were just shots in the dark and I just used what worked.
+
+Now having experience with Machine Learning (ML) through Udacity's [Machine Learning Engineer](https://www.udacity.com/course/machine-learning-engineer-nanodegree--nd009t) course, I am revisiting this project to see if ML can supercharge the analytics I preformed in High School.

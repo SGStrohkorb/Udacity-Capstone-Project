@@ -1,0 +1,7 @@
+*.xz
+cache/*/*.json
+cache/*/*.csv
+cache/*/*.npy
+cache/*/*.pickle
+.ipynb_checkpoints/*
+auth.key

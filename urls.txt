@@ -1,0 +1,6 @@
+https://www.thebluealliance.com/api/v3/events/2015 #gets all data about compitions in year 2015
+https://www.thebluealliance.com/api/v3/event/2015abca #gets all data about event for abca in 2015
+https://www.thebluealliance.com/api/v3/event/2015abca/teams #gets all teams for abca in 2015
+https://www.thebluealliance.com/api/v3/event/2015abca/matches #gets all detailed match data for abca in 2015
+https://www.thebluealliance.com/api/v3/event/2015abca/rankings #gets all ranking information for abca in 2015
+https://www.thebluealliance.com/api/v3/event/2015abca/alliances #gets alliances for abca in 2015
