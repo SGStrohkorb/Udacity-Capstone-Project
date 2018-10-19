@@ -1,0 +1,9 @@
+,0
+model_accuracy_score,0.8312214901165738
+model_fbeta_score,0.8446287679546834
+model_average_precision_score,0.7907449012604791
+first_accuracy_score,0.6756208819057273
+first_fbeta_score,0.6643732530638572
+first_average_precision_score,0.6029434003259192
+training_set_size,1396.0
+testing_set_size,1973.0
