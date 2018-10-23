@@ -255,7 +255,7 @@ def GNB_predictions(data, mpl, plt, week, with_rs):
     plt.yscale('symlog', linthreshy=.3)
     plt.savefig('results/GaussianNB_Diff_FIRST_True'+add_on, dpi=300)
 
-    plt.show()
+    #plt.show()
 
 def XGB_predictions(data, mpl, plt, week, with_rs):
     from numpy import equal
@@ -338,4 +338,4 @@ def XGB_predictions(data, mpl, plt, week, with_rs):
     plt.yscale('symlog', linthreshy=1.5)
     plt.savefig('results/XGB_Diff_FIRST_True'+add_on, dpi=300)
 
-    plt.show()
+    #plt.show()
