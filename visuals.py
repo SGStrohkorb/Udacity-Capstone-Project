@@ -65,9 +65,9 @@ def model_selection_scores(data, mpl, plt, pca=True, x=9, y=5.5, n=.3125, fs=16,
     for i, j in enumerate(x_train_acc):
         ax.text(i-n, j, '{:.5f}'.format(j), fontsize=fs)
     if pca:
-        plt.savefig(save_labels[0] + '_pca.png', dpi=300)
+        plt.savefig('supporting_images/' + save_labels[0] + '_pca.png', dpi=300)
     else:
-        plt.savefig(save_labels[0] + '_notpca.png', dpi=300)
+        plt.savefig('supporting_images/' + save_labels[0] + '_notpca.png', dpi=300)
 
     plt.figure(2)
     fig, ax = plt.subplots(figsize=(x, y))
@@ -77,9 +77,9 @@ def model_selection_scores(data, mpl, plt, pca=True, x=9, y=5.5, n=.3125, fs=16,
     for i, j in enumerate(x_test_acc):
         ax.text(i-n, j, '{:.5f}'.format(j), fontsize=fs)
     if pca:
-        plt.savefig(save_labels[1] + '_pca.png', dpi=300)
+        plt.savefig('supporting_images/' + save_labels[1] + '_pca.png', dpi=300)
     else:
-        plt.savefig(save_labels[1] + '_notpca.png', dpi=300)
+        plt.savefig('supporting_images/' + save_labels[1] + '_notpca.png', dpi=300)
 
     plt.figure(3)
     fig, ax = plt.subplots(figsize=(x, y))
@@ -89,9 +89,9 @@ def model_selection_scores(data, mpl, plt, pca=True, x=9, y=5.5, n=.3125, fs=16,
     for i, j in enumerate(x_test_fbeta):
         ax.text(i-n, j, '{:.5f}'.format(j), fontsize=fs)
     if pca:
-        plt.savefig(save_labels[2] + '_pca.png', dpi=300)
+        plt.savefig('supporting_images/' + save_labels[2] + '_pca.png', dpi=300)
     else:
-        plt.savefig(save_labels[2] + '_notpca.png', dpi=300)
+        plt.savefig('supporting_images/' + save_labels[2] + '_notpca.png', dpi=300)
 
     plt.figure(4)
     fig, ax = plt.subplots(figsize=(x, y))
@@ -101,9 +101,9 @@ def model_selection_scores(data, mpl, plt, pca=True, x=9, y=5.5, n=.3125, fs=16,
     for i, j in enumerate(x_test_precision):
         ax.text(i-n, j, '{:.5f}'.format(j), fontsize=fs)
     if pca:
-        plt.savefig(save_labels[3] + '_pca.png', dpi=300)
+        plt.savefig('supporting_images/' + save_labels[3] + '_pca.png', dpi=300)
     else:
-        plt.savefig(save_labels[3] + '_notpca.png', dpi=300)
+        plt.savefig('supporting_images/' + save_labels[3] + '_notpca.png', dpi=300)
 
     plt.figure(5)
     fig, ax = plt.subplots(figsize=(x, y))
@@ -117,9 +117,9 @@ def model_selection_scores(data, mpl, plt, pca=True, x=9, y=5.5, n=.3125, fs=16,
             format_fun = lambda x: '{:.5f}'.format(x)
         ax.text(i-n, j, format_fun(j), fontsize=fs)
     if pca:
-        plt.savefig(save_labels[4] + '_pca.png', dpi=300)
+        plt.savefig('supporting_images/' + save_labels[4] + '_pca.png', dpi=300)
     else:
-        plt.savefig(save_labels[4] + '_notpca.png', dpi=300)
+        plt.savefig('supporting_images/' + save_labels[4] + '_notpca.png', dpi=300)
 
     plt.show()
 
