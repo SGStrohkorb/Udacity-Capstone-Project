@@ -9,6 +9,17 @@
 %\usepackage{subfigure}
 \usepackage{subcaption}
 %\usepackage{graphicx}
+\usepackage{tikz}
+\usetikzlibrary{arrows}
+
+\tikzset{
+  treenode/.style = {align=center, inner sep=0pt, text centered,
+    font=\sffamily},
+  top/.style = {treenode, circle, white, draw=blue,
+    fill=blue, text width=1.5em},
+  bottom/.style = {treenode, circle, red, draw=red, 
+    fill=white, text width=1.5em}
+}
 
 \title{Udacity Machine Learning Engineering Nanodegree Capstone Project}
 \author{Samuel Strohkorb}
@@ -149,7 +160,7 @@ qm & 5 & 39 & Reached & 0 \\
 
 \subsubsection{Predictions} \label{Predictions}
 \par
-The "/event/\{event\_key\}/predictions" call returns a list of predictions that FIRST generates before each match. A sample of data is shown below from event key "2016ista" in table \ref{table:4}.
+The "/event/\{event\_key\}/predictions" call returns a list of predictions that FIRST generates before each match. This is completely independent of the analysis done in this project and will be used as the benchmark for the models developed later on. A sample of data is shown below from event key "2016ista" in table \ref{table:4}.
 
 \begin{table}[H]
 \caption{Sample Data From "/event/2016ista/predictions" API Call}
@@ -178,7 +189,181 @@ There are a number of recorded statistics in the matches data that have more tha
 
 \subsection{Data Set Expansion}
 \par
-As mentioned in section \ref{Matches}, most of the statistics recorded during a match are recorded per alliance, not per team. This is a handicap, because without knowledge of what each robot did during the match, predicting how well they will do during the next match becomes much harder. There is a white paper \citep{statspaper} on the forum Chief Delphi where statistics that help solve this problem are. Statistics suck as Offensive Power Rating (OPR), Defensive Power Rating (DPR), Combined Contribution to Winning Margin (CCWM), Combined Power Rating (CPR), Offensive Average (OAVE), and Defensive Average (DAVE) are defined in this paper, as well as a number of other statistics. The ones listed above will be used for this project.
+As mentioned in section \ref{Matches}, most of the statistics recorded during a match are recorded per alliance, not per team. This is a handicap, because without knowledge of what each robot did during the match, predicting how well they will do during the next match becomes much harder. There is a white paper \citep{statspaper} on the forum Chief Delphi where statistics that help solve this problem are. Statistics suck as Offensive Power Rating (OPR), Defensive Power Rating (DPR), Combined Contribution to Winning Margin (CCWM), Combined Power Rating (CPR), Offensive Average (OAVE), and Defensive Average (DAVE) are defined in this paper, as well as a number of other statistics.
+
+\subsubsection{OPR}
+\par
+OPR is an attempt to estimate how much a team contributes to statistics collected for the alliance. This is achieved by setting up a large system of equations. The system is build with the following equation
+$$statistic = team1 + team2 + team3$$
+For example, we will look the OPR calculation for the total score of a match. For the first match, teams 1, 2, and 3 are on the blue alliance and teams 4, 5, and 6 are on the red alliance. The equations for that match are as follows
+$$blue\_total\_points = team1OPR + team2OPR + team3OPR$$
+$$red\_total\_points = team4OPR + team5OPR + team6OPR$$
+Then, after each team has played about 4 matches, one is able to convert this large system of equations built from each match into matrices. It takes about 4 matches for the determinate of the team\#\_points matrix to not equal zero. Then the system can be solved. So, a high OPR would imply that a team has a strong offensive game and scores many points, were as a low OPR would imply that a team has a weak offensive game and scores few points. A sample of OPR statistics are below.
+
+\begin{table}[H]
+\caption{Sample Data From OPR Statistics Calculation}
+\centering
+\begin{tabular} { |c|c|c|c|c| }
+\hline
+team\_key & OPR & autoBoulderPoints\_OPR & foulPoints\_OPR & tba\_rpEarned\_OPR \\
+\hline
+frc16 & 58.3496 & 0.0925 & 0.5989 & 2.2821 \\
+\hline
+frc2077 & 26.5014 & -0.6756 & -0.6097 & 0.8320 \\
+\hline
+frc3160 & 19.5023 & 0.2323 & 0.2398 & 0.6075 \\
+\hline
+frc4490 & 22.4926 & 1.1289 & 0.6110 & 0.1359 \\
+\hline
+frc5729 & 11.4403 & 0.1019 & 0.2366 & -0.4085 \\
+\hline
+\end{tabular}
+\label{table:OPR}
+\end{table}
+
+\subsubsection{DPR}
+\par
+DPR is an attempt to estimate how much a team contributes to statistics collected for that apposing alliance. The calculation is very similar to that of OPR, with one difference. Instead of using the alliance the teams are on as their total statistic, they use the other alliance's. An example of the first match like in OPR is as follows
+$$red\_total\_points = team1OPR + team2OPR + team3OPR$$
+$$blue\_total\_points = team4OPR + team5OPR + team6OPR$$
+The same procedure for solving the system of equations is the same for OPR. But what it implies is different. A high DPR implies that a team has a weak defensive game and allows the apposing alliance to score a many points and a low DPR implies that a team has a strong defensive game and allows the apposing alliance to score few points. A sample of DPR statistics are below. 
+
+\begin{table}[H]
+\caption{Sample Data From DPR Statistics Calculation}
+\centering
+\resizebox{\textwidth}{!}{%
+\begin{tabular} { |c|c|c|c|c| }
+\hline
+team\_key & DPR & autoBouldersHigh\_DPR & position1crossings\_DPR & position3\_B\_Moat\_DPR \\
+\hline
+frc1739 & 14.3473 & -0.0385 & 0.7299 & 0.0991 \\
+\hline
+frc3132 & 22.6841 & -0.0144 & 0.6901 & 0.0617 \\
+\hline
+frc4253 & 24.3615 & 0.0696 & 0.7827 & -0.0531 \\
+\hline
+frc5648 & 26.1480 & 0.0850 & 0.7240 & -0.0647 \\
+\hline
+frc5663 & 8.8290 & -0.0459 & 0.5422 & 0.0174 \\
+\hline
+\end{tabular}
+}
+\label{table:DPR}
+\end{table}
+
+\subsubsection{CCWM}
+\par
+CCWM is an attempt to estimate by how much a team contributes to the winning margin for their alliance. The calculation is as follows
+$$team1CCWM = team1OPR - team1DPR$$
+A high CCWM implies a team has a high winning margin and a low CCWM implies a team has a low winning margin or a negative winning margin. In the negative case, they would be a detriment to have on the team, because they allow the other team to score more points on them then they score themselves. A sample of CCWM statistics are below.
+
+\begin{table}[H]
+\caption{Sample Data From CCWM Statistics Calculation}
+\centering
+\begin{tabular} { |c|c|c|c|c| }
+\hline
+team\_key & CCWM & autoBoulderPoints\_OPR & foulPoints\_OPR & tba\_rpEarned\_OPR \\
+\hline
+frc2077 & 58.3496 & 0.0925 & 0.5989 & 2.2821 \\
+\hline
+frc3061 & 26.5014 & -0.6756 & -0.6097 & 0.8320 \\
+\hline
+frc4090 & 19.5023 & 0.2323 & 0.2398 & 0.6075 \\
+\hline
+frc5721 & 22.4926 & 1.1289 & 0.6110 & 0.1359 \\
+\hline
+frc5729 & 11.4403 & 0.1019 & 0.2366 & -0.4085 \\
+\hline
+\end{tabular}
+\label{table:CCWM}
+\end{table}
+
+\subsubsection{OAVE}
+\par
+OAVE is the average of a team's collected statistics. Assuming the example team played on the blue alliance for the first three matches, the equation is as follows
+$$team1OAVE = \frac{blue\_match1 + blue\_match2 + blue\_match3}{number\ of\ matches}$$
+This differs from OPR because OPR attempts to calculate the exact amount a team contributes to an alliance. OAVE is susceptible to inflation by consistently playing with strong or weak teams. OAVE is still a good indicator of a teams performance and will be used. A sample of OAVE statistics are below.
+
+\begin{table}[H]
+\caption{Sample Data From OAVE Statistics Calculation}
+\centering
+\resizebox{\textwidth}{!}{%
+\begin{tabular} { |c|c|c|c|c| }
+\hline
+team\_key & OAVE & autoCrossingPoints\_OAVE & position5crossings\_OAVE & position5\_C\_Drawbridge\_CPR \\
+\hline
+frc606 & 62.875 & 13.75 & 1.75 & 0.1377 \\
+\hline
+frc4019 & 58.125 & 16.25 & 1.50 & 0.2108 \\
+\hline
+frc4141 & 60.875 & 15.00 & 1.50 & -0.1012 \\
+\hline
+frc5966 & 56.000 & 10.00 & 1.25 & 0.4241 \\
+\hline
+frc6000 & 64.750 & 10.00 & 0.75 & 0.0709 \\
+\hline
+\end{tabular}
+}
+\label{table:OAVE}
+\end{table}
+
+\subsubsection{DAVE}
+\par
+DAVE is the average of the apposing alliance's collected statistics. Assuming the example team played on the blue alliance for the first three matches, the equation is as follows
+$$team1DAVE = \frac{red\_match1+red\_match2+red\_match3}{number\ of\ matches}$$
+The same principals for OAVE and OPR apply to DAVE and DPR. A sample of DAVE statistics are below.
+
+\begin{table}[H]
+\caption{Sample Data From DAVE Statistics Calculation}
+\centering
+\resizebox{\textwidth}{!}{%
+\begin{tabular} { |c|c|c|c|c| }
+\hline
+team\_key & DAVE & autoBouldersHigh\_DAVE & teleopChallengePoints\_DAVE & teleopPoints\_DAVE \\
+\hline
+frc1323 & 77.5 & 0.1 & 11.0 & 60.4 \\
+\hline
+frc2812 & 74.2 & 0.1 & 9.0 & 56.2 \\
+\hline
+frc3045 & 73.5 & 0.0 & 9.5 & 54.0 \\
+\hline
+frc4990 & 68.8 & 0.1 & 7.5 & 49.5 \\
+\hline
+frc6059 & 65.3 & 0.2 & 9 & 46.7 \\
+\hline
+\end{tabular}
+}
+\label{table:DAVE}
+\end{table}
+
+\subsubsection{CPR}
+\par
+CPR is a team's OPR and OAVE added together. The equation is as follows
+$$team1CPR = team1OPR+team1OAVE$$
+With OPR being an estimate of a teams performance and OAVE being the average, with the two added together, they provide a fairly accurate picture of a team's performance. A sample of CPR statistics are below.
+
+\begin{table}[H]
+\caption{Sample Data From CPR Statistics Calculation}
+\centering
+\resizebox{\textwidth}{!}{%
+\begin{tabular} { |c|c|c|c|c| }
+\hline
+team\_key & CPR & teleopBoulderPoints\_CPR & teleopDefensesBreached\_CPR & towerEndStrength\_CPR \\
+\hline
+frc16 & 112.6253 & 22.4655 & 0.9759 & 5.1513 \\
+\hline
+frc2077 & 54.2216 & 2.4591 & 0.0619 & 8.7356 \\
+\hline
+frc3160 & 100.3236 & 11.7108 & 1.1317 & 7.7175 \\
+\hline
+frc4490 & 54.7749 & 5.2531 & 0.0557 & 6.6788 \\
+\hline
+frc5729 & 72.5544 & 1.4139 & 0.1531 & 6.5917 \\
+\hline
+\end{tabular}
+}
+\label{table:CPR}
+\end{table}
 
 \subsection{Major Assumption}
 \par
@@ -190,11 +375,11 @@ This assumption allows for each match to have one set of statistics associated w
 
 \subsection{Exploratory Visualization} \label{PCA}
 \par
-Now with all of the statistics and data for each match calculated, there are 369 dimensions per row of data. Visualizing 369 dimensions is not an easy task. Thus, Principal Component Analysis (PCA) will be used to reduce the number of dimensions in the data, for easier visualization. For the first plot, I used all of the data from week one through six, which contains 9195 samples, and calculated the first five principle dimensions. This is plotted against the explained variance ratio in figure \ref{fig:FirstPCA}. This figure demonstrates how the first principle axis has most of the explained variance, with the other dimensions having significantly less explained variance. This suggests that the data can be approximated with more simple model types.
+Now with all of the statistics and data for each match calculated, there are 440 dimensions per row of data. Visualizing 440 dimensions is not an easy task. Thus, Principal Component Analysis (PCA) will be used to reduce the number of dimensions in the data, for easier visualization. For the first plot, I used all of the data from week one through six, which contains 9195 samples, and calculated the first five principle dimensions. This is plotted against the explained variance ratio in figure \ref{fig:FirstPCA}. This figure demonstrates how the first principle axis has most of the explained variance, with the other dimensions having significantly less explained variance. This suggests that the data can be approximated with more simple model types.
 
 \begin{figure}[H]%Maybe add colormap to this one
 \centering
-\includegraphics[scale=0.75]{FirstPCA.png}%scale=0.6
+\includegraphics[scale=0.75]{supporting_images/FirstPCA.png}%scale=0.6
 \caption{The First 5 Principle Dimensions v. Explained Variance Ratio}
 \label{fig:FirstPCA}
 \end{figure}
@@ -204,36 +389,107 @@ Another way to group the data is with clustering. The clustering that was perfor
 
 \begin{figure}[H]
 \centering
-\includegraphics[scale=0.59]{FirstCluster.png}%scale=0.475
+\includegraphics[scale=0.59]{supporting_images/FirstCluster.png}%scale=0.475
 \caption{Second Principle Dimension v. First Principle Dimension with Clustering}
 \label{fig:FirstCluster}
 \end{figure}
 
 \begin{figure}[H]
 \centering
-\includegraphics[scale=0.59]{SecondCluster.png}%scale=0.475
+\includegraphics[scale=0.59]{supporting_images/SecondCluster.png}%scale=0.475
 \caption{Second Principle Dimension v. First Principle Dimension with Clustering on a Symmetric Logarithmic Scale}
 \label{fig:SecondCluster}
 \end{figure}
 
 \subsection{Algorithm Selection} \label{algorithm_selection}
-For this project, five different algorithms were analyzed to see which one would be the best for this application. The five algorithms are XGB Classifier, Support Vector Classifier (SVC), AdaBoost Classifier, Gaussian Naive Bayes (GaussianNB), and Logistic Regression. In selecting an algorithm, each was tested with both the transformed data from the data set and the PCA analysis in section \ref{PCA}. Both data sets were separated into training and testing groups, with approximately 15\% of the data in the testing set. Both data sets were preprocessed by scaling each dimension to a range to [-1, 1]. Accuracy of the training set, accuracy of the testing set, F1 score, precision, and training time were all recorded. The results are in the figures below. %Do I need documentation for these algorithms?
+\par
+For this project, five different algorithms were analyzed to see which one would be the best for this application. The five algorithms are XGBoost Classifier (XGB), Support Vector Classifier (SVC), Adaptive Boosting (AdaBoost) Classifier, Gaussian Naive Bayes (GaussianNB), and Logistic Regression. 
 
-%May need to change the colors of the graphs
+\subsubsection{Support Vector Classifier}
+\par
+The Support Vector Classifier is a classification algorithm based on a Support Vector Machine (SVM). In the case of this project, the SVM is classifying with a RBF kernel. The Radial Basis Function (RBF) kernel in a two dimensional spacial sense, the SVC draws a mountain above each point. From there, a series of weights are calculated based on the heights of the mountains at each point. From those weights, the mountains are multiplied by a scaler. After that, a line is used to divide the high points from the low points. The high and low points are the binary classification for the system. This method is easily extrapolated to higher dimensions, allowing for classification of high dimensional data sets.
+
+\subsubsection{AdaBoost Classifier}
+\par
+The AdaBoost Classifier used in the project has Decision Tree Classifiers (DTC) as the trees. The AdaBoost Classifier uses multiple DTCs as weak learners. These learners do not learn much on their own. They become strong when the AdaBoost Classifier adds the weights of the DTCs together, effectively creating one strong learner from the ensemble of weak learners.
+\par
+The Decision Tree Classifiers divide the data into two groups. Then the next level is divided into two groups and so on for a specific number of levels. With a shallow number of levels, the DTC will not learn much. This is good for a boosting algorithm like AdaBoost, for many weak learners combined are often stronger than one strong learner. An example of a decision tree is below.
+
+\begin{figure}[H]
+    \centering
+    \begin{tikzpicture}[
+        every node/.style={scale=1.3},
+        ->,
+        >=stealth',
+        level/.style={sibling distance = 7cm/#1,
+        level distance = 1.4cm}
+    ]
+    \node [top] {1}
+        child{ node [top] {2}
+            child{ node [top] {3}
+                child{ node [top] {5}
+                }
+                child{ node [bottom] {$\overline{5}$}
+                }
+            }
+            child{ node [bottom] {$\overline{3}$}
+                child{ node [top] {6}
+                }
+                child{ node [bottom] {$\overline{6}$}
+                }
+            }
+        }
+        child{ node [bottom] {$\overline{2}$}
+            child{ node [top] {4}
+                child{ node [top] {7}
+                }
+                child{ node [bottom] {$\overline{7}$}
+                }
+            }
+            child{ node [bottom] {$\overline{4}$}
+                child{ node [top] {8}
+                }
+                child{ node [bottom] {$\overline{8}$}
+                }
+            }
+        }
+    ;
+    \end{tikzpicture}
+    \caption{Example Decision Tree Classifier Tree}
+    \label{fig:tree}
+\end{figure}
+
+\subsubsection{XGBoost Classifier}
+\par
+The XGBoost Classifier is a gradient boosting algorithm, similar to AdaBoost, that is designed with optimization and distributed computing in mind. This comes very efficient memory use for large data sets. XGBoost uses Decision Tree Classifiers like AdaBoost. But the way XGBoost combines the weak learners is different from AdaBoost. XGBoost uses a technique call Newton Boosting which uses the Newton-Paphson method. The Newton-Paphson method uses a direct route to find local minima instead of using gradient decent.
+
+\subsubsection{Gaussian Naive Bayes}
+\par
+The Gaussian Naive Bayes algorithm is a probabilistic classifier that relies on the naive assumption of independence among the features. The Gaussian Naive Bayes is based on Bayes Theorem. This theorem is stated by the following equation
+$$P(A|B) = \frac{P(B|A)*P(A)}{P(B)}$$
+This formula is used to take known data from the training set to then infer the probabilities of a new sample. This is a very simple, but effective way to classify a data set.
+
+\subsubsection{Logistic Regression}
+\par
+Logistic Regression is simply a linear regression, but used for binary classification. In a two dimensional sense, anything above the line would be classified as one group, everything below the line would be classified as the other group. This is extrapolated to higher dimensions and is a fairly simple model.
+
+\subsubsection{Selection Results}
+\par
+In selecting an algorithm, each was tested with both the transformed data from the data set and the PCA analysis in section \ref{PCA}. Both data sets were separated into training and testing groups, with approximately 15\% of the data in the testing set. Both data sets were preprocessed by scaling each dimension to a range to [-1, 1]. Accuracy of the training set, accuracy of the testing set, F1 score, precision, and training time were all recorded. The results are in the figures below. %Do I need documentation for these algorithms?
 
 %Training Set Accuracy
 \begin{figure}[H]
     \centering
     \begin{subfigure}[t]{0.495\textwidth}
         \centering
-        \includegraphics[width=\textwidth]{train_acc_notpca.png}
+        \includegraphics[width=\textwidth]{supporting_images/train_acc_notpca.png}
         \caption{Fitted with the whole data set}
         \label{fig:train_acc_notpca}
     \end{subfigure}
     \hfill
     \begin{subfigure}[t]{0.495\textwidth}
         \centering
-        \includegraphics[width=\textwidth]{train_acc_pca.png}
+        \includegraphics[width=\textwidth]{supporting_images/train_acc_pca.png}
         \caption{Fitted with the transformed PCA data set}
         \label{fig:train_acc_pca}
     \end{subfigure}
@@ -246,14 +502,14 @@ For this project, five different algorithms were analyzed to see which one would
     \centering
     \begin{subfigure}[t]{0.495\textwidth}
         \centering
-        \includegraphics[width=\textwidth]{test_acc_notpca.png}
+        \includegraphics[width=\textwidth]{supporting_images/test_acc_notpca.png}
         \caption{Fitted with the whole data set}
         \label{fig:test_acc_notpca}
     \end{subfigure}
     \hfill
     \begin{subfigure}[t]{0.495\textwidth}
         \centering
-        \includegraphics[width=\textwidth]{test_acc_pca.png}
+        \includegraphics[width=\textwidth]{supporting_images/test_acc_pca.png}
         \caption{Fitted with the transformed PCA data set}
         \label{fig:test_acc_pca}
     \end{subfigure}
@@ -266,14 +522,14 @@ For this project, five different algorithms were analyzed to see which one would
     \centering
     \begin{subfigure}[t]{0.495\textwidth}
         \centering
-        \includegraphics[width=\textwidth]{fbeta_notpca.png}
+        \includegraphics[width=\textwidth]{supporting_images/fbeta_notpca.png}
         \caption{Fitted with the whole data set}
         \label{fig:fbeta_notpca}
     \end{subfigure}
     \hfill
     \begin{subfigure}[t]{0.495\textwidth}
         \centering
-        \includegraphics[width=\textwidth]{fbeta_pca.png}
+        \includegraphics[width=\textwidth]{supporting_images/fbeta_pca.png}
         \caption{Fitted with the transformed PCA data set}
         \label{fig:fbeta_pca}
     \end{subfigure}
@@ -286,14 +542,14 @@ For this project, five different algorithms were analyzed to see which one would
     \centering
     \begin{subfigure}[t]{0.495\textwidth}
         \centering
-        \includegraphics[width=\textwidth]{precision_notpca.png}
+        \includegraphics[width=\textwidth]{supporting_images/precision_notpca.png}
         \caption{Fitted with the whole data set}
         \label{fig:precision_notpca}
     \end{subfigure}
     \hfill
     \begin{subfigure}[t]{0.495\textwidth}
         \centering
-        \includegraphics[width=\textwidth]{precision_pca.png}
+        \includegraphics[width=\textwidth]{supporting_images/precision_pca.png}
         \caption{Fitted with the transformed PCA data set}
         \label{fig:precision_pca}
     \end{subfigure}
@@ -306,14 +562,14 @@ For this project, five different algorithms were analyzed to see which one would
     \centering
     \begin{subfigure}[t]{0.495\textwidth}
         \centering
-        \includegraphics[width=\textwidth]{time_notpca.png}
+        \includegraphics[width=\textwidth]{supporting_images/time_notpca.png}
         \caption{Fitted with the whole data set}
         \label{fig:time_notpca}
     \end{subfigure}
     \hfill
     \begin{subfigure}[t]{0.495\textwidth}
         \centering
-        \includegraphics[width=\textwidth]{time_pca.png}
+        \includegraphics[width=\textwidth]{supporting_images/time_pca.png}
         \caption{Fitted with the transformed PCA data set}
         \label{fig:time_pca}
     \end{subfigure}
@@ -334,7 +590,7 @@ For this project, both the XGB classifier with the whole data set and the Gaussi
 
 \subsection{Benchmark}
 \par
-The benchmark data set used for this project is the predictions data set (section \ref{Predictions}). The performance of this benchmark will be compared to the true values, the XGB classifier and the GaussianNB algorithm.
+The benchmark data set used for this project is the predictions data set (section \ref{Predictions}). This data set is completely independent of the models used in this project, it is calculated by FIRST before every match in real time. The performance of this benchmark will be compared to the true values, the XGB classifier and the GaussianNB algorithm.
 
 \section{Methodology}
 
@@ -376,7 +632,24 @@ Coding all of this functionality took a lot of time. None of it was too complex,
 
 \subsection{Model Refinement}
 \par
-Only the XGB Classifier has hyperparameters that can be tuned. Hours were spend trying to tune the "max\_depth", "learning\_rate", and "n\_estimators" hyperparameters, but no amount of tuning showed significant increase or any increase at all, over the default values. This took me by surprise and I investigated it thoroughly. But the hyperparameters could not be tuned any further.
+Only the XGB Classifier has hyperparameters that can be tuned. Hours were spend trying to tune the "max\_depth", "learning\_rate", and "n\_estimators" hyperparameters, but no amount of tuning showed significant increase or any increase at all, over the default values. This took me by surprise and I investigated it thoroughly. But the hyperparameters could not be tuned any further. Below is an example of the tuning attempt, with week 1 through 3 as training and week 4 as testing.
+
+\begin{table}[H]
+\caption{XGB Classifier Hyperparameter Tuning Attempt}
+\centering
+\begin{tabular} { |c|c|c| }
+\hline
+Metric & Default & Best Tuning \\
+\hline
+Accuracy & 0.90116 & 0.89761 \\
+\hline
+F1 Score & 0.91256 & 0.90745 \\
+\hline
+Precision & 0.87400 & 0.86826 \\
+\hline
+\end{tabular}
+\label{table:tuning}
+\end{table}
 
 \section{Results} \label{Results}
 
@@ -395,11 +668,11 @@ Below are the tabular results of running the models and comparing them to the be
     \hline
     Metric & FIRST & GaussianNB & XGB & GaussianNB & XGB \\
     \hline
-    Accuracy & 0.67562 & 0.83122 & 0.90167 & 0.83172 & 0.82108 \\
+    Accuracy & 0.67562 & 0.83223 & 0.90116 & 0.83223 & 0.82057 \\
     \hline
-    F1 Score & 0.66437 & 0.84462 & 0.91422 & 0.84531 & 0.84080 \\
+    F1 Score & 0.66437 & 0.84671 & 0.91256 & 0.84671 & 0.83832 \\
     \hline
-    Precision & 0.60294 & 0.79074 & 0.87555 & 0.79145 & 0.78384 \\
+    Precision & 0.60294 & 0.79269 & 0.87400 & 0.79269 & 0.78183 \\
     \hline
     \end{tabular}
     \label{table:results_week_1}
@@ -414,11 +687,11 @@ Below are the tabular results of running the models and comparing them to the be
     \hline
     Metric & FIRST & GaussianNB & XGB & GaussianNB & XGB \\
     \hline
-    Accuracy & 0.69844 & 0.83545 & 0.89053 & 0.83545 & 0.83615 \\
+    Accuracy & 0.69844 & 0.83615 & 0.89477 & 0.83474 & 0.83474 \\
     \hline
-    F1 Score & 0.69921 & 0.84812 & 0.89875 & 0.84812 & 0.84707 \\
+    F1 Score & 0.69921 & 0.84959 & 0.90229 & 0.84868 & 0.84717 \\
     \hline
-    Precision & 0.63973 & 0.79480 & 0.85787 & 0.79480 & 0.79433 \\
+    Precision & 0.63973 & 0.79617 & 0.86269 & 0.79491 & 0.79380 \\
     \hline
     \end{tabular}
     \label{table:results_week_2}
@@ -433,11 +706,11 @@ Below are the tabular results of running the models and comparing them to the be
     \hline
     Metric & FIRST & GaussianNB & XGB & GaussianNB & XGB \\
     \hline
-    Accuracy & 0.72572 & 0.83291 & 0.91298 & 0.83228 & 0.82849 \\
+    Accuracy & 0.72572 & 0.83228 & 0.91424 & 0.83165 & 0.82534 \\
     \hline
-    F1 Score & 0.72227 & 0.83353 & 0.91428 & 0.83271 & 0.83024 \\
+    F1 Score & 0.72227 & 0.83271 & 0.91668 & 0.83189 & 0.82855 \\
     \hline
-    Precision & 0.65907 & 0.78015 & 0.87942 & 0.77929 & 0.77584 \\
+    Precision & 0.65907 & 0.77929 & 0.88194 & 0.77844 & 0.77324 \\
     \hline
     \end{tabular}
     \label{table:results_week_3}
@@ -452,11 +725,11 @@ Below are the tabular results of running the models and comparing them to the be
     \hline
     Metric & FIRST & GaussianNB & XGB & GaussianNB & XGB \\
     \hline
-    Accuracy & 0.72737 & 0.83135 & 0.90948 & 0.83189 & 0.84051 \\
+    Accuracy & 0.72737 & 0.83620 & 0.91702 & 0.83566 & 0.84105 \\
     \hline
-    F1 Score & 0.73260 & 0.83111 & 0.90946 & 0.83179 & 0.84359 \\
+    F1 Score & 0.73260 & 0.83624 & 0.91969 & 0.83590 & 0.84321 \\
     \hline
-    Precision & 0.67185 & 0.77955 & 0.87491 & 0.78027 & 0.79247 \\
+    Precision & 0.67185 & 0.78532 & 0.88680 & 0.78484 & 0.79244 \\
     \hline
     \end{tabular}
     \label{table:results_week_4}
@@ -471,11 +744,11 @@ Below are the tabular results of running the models and comparing them to the be
     \hline
     Metric & FIRST & GaussianNB & XGB & GaussianNB & XGB \\
     \hline
-    Accuracy & 0.71900 & 0.80888 & 0.91425 & 0.80888 & 0.82644 \\
+    Accuracy & 0.71900 & 0.81611 & 0.91735 & 0.81611 & 0.82644 \\
     \hline
-    F1 Score & 0.70961 & 0.81130 & 0.91036 & 0.81130 & 0.83161 \\
+    F1 Score & 0.70961 & 0.81873 & 0.91475 & 0.81873 & 0.82892 \\
     \hline
-    Precision & 0.64652 & 0.75406 & 0.87710 & 0.75406 & 0.77573 \\
+    Precision & 0.64652 & 0.76227 & 0.88215 & 0.76227 & 0.77388 \\
     \hline
     \end{tabular}
     \label{table:results_week_5}
@@ -569,25 +842,25 @@ The feature importance for week 2 and week 6 of testing with ranking score and w
     \hline
     Index & \multicolumn{2}{|c|}{With Ranking Score} & \multicolumn{2}{|c|}{Without Ranking Score} \\
     \hline
-    1 & tba\_rpEarned\_OPR & 0.1287 & CCWM & 0.1120 \\
+    1 & tba\_rpEarned\_CCWM & 0.11202 & CCWM & 0.10754 \\
     \hline
-    2 & tba\_rpEarned\_DPR & 0.0869 & OPR & 0.0480 \\
+    2 & tba\_rpEarned\_OPR & 0.06260 & OPR & 0.03210 \\
     \hline
-    3 & teleopDefensesBreached\_OPR & 0.0250 & towerEndStrength\_DPR & 0.0144 \\
+    3 & tba\_rpEarned\_DPR & 0.03789 & position5\_B\_Ramparts\_CCWM & 0.01444 \\
     \hline
-    4 & position3\_D\_RoughTerrain\_CPR & 0.0200 & Scale/Challenge\_a & 0.0144 \\
+    4 & teleopDefensesBreached\_CCWM & 0.02965 & Auto\_Crossed\_a & 0.01444 \\
     \hline
-    5 & teleopDefensesBreached\_OAVE & 0.0183 & teleopPoints\_DPR & 0.0144 \\
+    5 & tba\_rpEarned\_CPR & 0.01976 & position4crossings\_CCWM & 0.01284 \\
     \hline
-    6 & teleopBouldersLow\_CPR & 0.0183 & autoPoints\_OPR & 0.0128 \\
+    6 & position3\_D\_RoughTerrain\_CPR & 0.01647 & Scale/Challenge\_a & 0.01284 \\
     \hline
-    7 & tba\_rpEarned\_CPR & 0.0150 & position4\_A\_Portcullis\_CPR & 0.0128 \\
+    7 & teleopDefensesBreached\_DPR & 0.01317 & teleopTowerCaptured\_CCWM & 0.01284 \\
     \hline
-    8 & position2\_A\_Portcullis\_DPR & 0.0150 & autoBoulderPoints\_OPR & 0.0112 \\
+    8 & teleopDefensesBreached\_CPR & 0.01317 & towerFaceA\_None\_CCWM & 0.01123 \\
     \hline
-    9 & teleopTowerCaptured\_OPR & 0.0150 & Auto\_Crossed\_a & 0.0112 \\
+    9 & autoCrossingPoints\_DPR & 0.01317 & autoPoints\_OPR & 0.01123 \\
     \hline
-    10 & foulCount\_DPR & 0.0133 & teleopCrossingPoints\_DPR & 0.0112 \\
+    10 & autoPoints\_DPR & 0.01153 & teleopPoints\_CCWM & 0.01123 \\
     \hline
     \end{tabular}
     \label{table:feature_importance_week_2}
@@ -596,31 +869,33 @@ The feature importance for week 2 and week 6 of testing with ranking score and w
 \begin{table}[H]
     \caption{Feature importances for week 6}
     \centering
+    \resizebox{\textwidth}{!}{%
     \begin{tabular} { |c|c|c|c|c| }
     \hline
     Index & \multicolumn{2}{|c|}{With Ranking Score} & \multicolumn{2}{|c|}{Without Ranking Score} \\
     \hline
-    1 & tba\_rpEarned\_OPR & 0.1470 & CCWM & 0.1352 \\
+    1 & tba\_rpEarned\_CCWM & 0.13253 & CCWM & 0.12878 \\
     \hline
-    2 & tba\_rpEarned\_DPR & 0.0985 & OPR & 0.1033 \\
+    2 & tba\_rpEarned\_OPR & 0.08132 & OPR & 0.10151 \\
     \hline
-    3 & teleopDefensesBreached\_OPR & 0.0544 & CPR & 0.0212 \\
+    3 & teleopDefensesBreached\_CCWM & 0.08132 & position1crossings\_CCWM & 0.01818 \\
     \hline
-    4 & tba\_rpEarned\_CPR & 0.0294 & towerEndStrength\_DPR & 0.0167 \\
+    4 & teleopTowerCaptured\_CCWM & 0.04518 & teleopTowerCaptured\_CCWM & 0.01818 \\
     \hline
-    5 & teleopTowerCaptured\_DPR & 0.0250 & teleopDefensesBreached\_OPR & 0.0167 \\
+    5 & tba\_rpEarned\_DPR & 0.04066 & towerFaceA\_Scaled\_CCWM & 0.016666 \\
     \hline
-    6 & teleopDefensesBreached\_DPR & 0.0235 & teleopTowerCaptured\_DPR & 0.01519 \\
+    6 & tba\_rpEarned\_CPR & 0.02710 & CPR & 0.01515 \\
     \hline
-    7 & teleopTowerCaptured\_OPR & 0.0235 & towerFaceC\_Challenged\_OPR & 0.0136 \\
+    7 & OPR & 0.02108 & teleopDefensesBreached\_CCWM & 0.01515 \\
     \hline
-    8 & teleopDefensesBreached\_CPR & 0.0191 & teleopCrossingPoints\_DPR & 0.0121 \\
+    8 & towerFaceA\_Scaled\_CCWM & 0.01807 & towerEndStrength\_DPR & 0.01363 \\
     \hline
-    9 & teleopTowerCaptured\_CPR & 0.0191 & towerFaceB\_Scaled\_OPR & 0.0121 \\
+    9 & teleopDefensesBreached\_OPR & 0.01506 & techFoulCount\_CCWM & 0.01212 \\
     \hline
-    10 & OPR & 0.0191 & Goals\_a & 0.0106 \\
+    10 & autoPoints\_DPR & 0.01355 & towerFaceC\_Challenged\_CCWM & 0.01060 \\
     \hline
     \end{tabular}
+    }
     \label{table:feature_importance_week_6}
 \end{table}
 
